@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digit Recognition for Visually Impaired</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #1a202c; /* Dark text color */
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+            width: 500px; /* Fixed width for better centering */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        video {
+            width: 50%; /* Smaller width for the video feed */
+            max-width: 100px; /* Limit max size while keeping it responsive */
+            height: auto;
+            border-radius: 1rem;
+            border: 2px solid #cbd5e0; /* Light border */
+            background-color: #e2e8f0; /* Placeholder background */
+            margin: 0 auto; /* Center the video horizontally */
+        }
+        button {
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(to right, #4c51bf, #6b46c1); /* Gradient button */
+            color: white;
+            border: none;
+            border-radius: 0.75rem; /* Rounded button */
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 10px rgba(76, 81, 191, 0.3);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(76, 81, 191, 0.4);
+        }
+        #recognizedDigit {
+            font-size: 6rem; /* Very large digit */
+            font-weight: bold;
+            color: #4c51bf; /* Blue color for digit */
+            min-height: 100px; /* Ensure space even if no digit yet */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #edf2f7; /* Light background for digit display */
+            border-radius: 1rem;
+            padding: 1rem;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        #statusMessage {
+            font-size: 1rem;
+            color: #4a5568; /* Gray text for status */
+            min-height: 24px; /* Space for messages */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .container {
+                padding: 1.5rem;
+                border-radius: 1rem;
+                gap: 1rem;
+            }
+            button {
+                font-size: 1rem;
+                padding: 0.7rem 1.2rem;
+            }
+            #recognizedDigit {
+                font-size: 4rem;
+            }
+            video {
+                width: 50%; /* Adjust for smaller screens */
+                max-width: 100px; /* Smaller max width on mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Digit Recognition</h1>
+        <div id="statusMessage" class="text-red-500 mb-2"></div>
+        <video id="videoFeed" autoplay muted playsinline class="rounded-lg shadow-md"></video>
+
+        <button id="recognizeButton">Recognize Digit</button>
+
+        <div id="recognizedDigit" class="rounded-lg text-6xl font-extrabold flex items-center justify-center border-2 border-dashed border-gray-300">
+            ?
+        </div>
+    </div>
+
+    <script>
+        // Get references to DOM elements
+        const videoFeed = document.getElementById('videoFeed');
+        const recognizeButton = document.getElementById('recognizeButton');
+        const recognizedDigitDisplay = document.getElementById('recognizedDigit');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // Function to start the camera feed
+        async function startCamera() {
+            try {
+                // Request access to the user's camera
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                videoFeed.srcObject = stream; // Set the video element's source to the camera stream
+                statusMessage.textContent = 'Camera started successfully.';
+            } catch (err) {
+                // Handle errors if camera access is denied or not available
+                console.error('Error accessing camera:', err);
+                statusMessage.textContent = 'Error: Could not access camera. Please ensure permissions are granted.';
+                // Provide a custom message box instead of alert()
+                recognizedDigitDisplay.innerHTML = `
+                    <div class="p-4 bg-red-100 text-red-700 rounded-lg">
+                        <p class="font-bold">Camera Access Required</p>
+                        <p>Please allow camera access to use this feature.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Function to simulate digit recognition and provide audio feedback
+        async function recognizeDigit() {
+            statusMessage.textContent = 'Recognizing...';
+            // In a real application, you would capture a frame from the video,
+            // preprocess it, and pass it to your ML model (e.g., TensorFlow.js).
+            // For this demonstration, we'll simulate a random digit recognition.
+
+            // Simulate a delay for recognition
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            const recognizedValue = Math.floor(Math.random() * 10); // Generates a random digit from 0-9
+            recognizedDigitDisplay.textContent = recognizedValue; // Update the display
+
+            // Use Web Speech API for audio feedback
+            const utterance = new SpeechSynthesisUtterance(`The recognized digit is ${recognizedValue}`);
+            speechSynthesis.speak(utterance);
+            statusMessage.textContent = `Digit recognized: ${recognizedValue}`;
+        }
+
+        // Event listener for the recognize button
+        recognizeButton.addEventListener('click', recognizeDigit);
+
+        // Start the camera when the window loads
+        window.onload = startCamera;
+    </script>
+</body>
+</html>
